@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% from "_ui.html" import stars, shelter_cover %}
+{% from "_form_helpers.html" import render_field %}
+{% block title %}{{ shelter.name }}{% endblock %}
+{% block content %}
+  <a class="back-link" href="{{ url_for('shelters.index') }}">← All shelters</a>
+
+  <div class="detail-hero">
+    {{ shelter_cover(shelter, cls="detail-cover") }}
+  </div>
+
+  <div class="detail-layout">
+    <div class="detail-main">
+      <div class="detail-title">
+        <div>
+          {% if shelter.serves %}<span class="chip">{{ shelter.serves }}</span>{% endif %}
+          <h1>{{ shelter.name }}</h1>
+          {% if shelter.operator %}<p class="muted">Run by {{ shelter.operator }}</p>{% endif %}
+        </div>
+        {% if shelter.can_be_edited_by(current_user) %}
+          <a class="button button-secondary button-small" href="{{ url_for('shelters.edit', shelter_id=shelter.id) }}">Edit shelter</a>
+        {% endif %}
+      </div>
+
+      <div class="rating-summary">
+        {% if shelter.review_count %}
+          <span class="rating-big">{{ shelter.average_rating }}</span>
+          <div>{{ stars(shelter.average_rating) }}
+            <p class="muted small">{{ shelter.review_count }} review{{ 's' if shelter.review_count != 1 }}</p></div>
+        {% else %}
+          <p class="muted">No reviews yet.</p>
+        {% endif %}
+      </div>
+
+      {% if shelter.description %}<p class="description">{{ shelter.description }}</p>{% endif %}
+
+      <section id="reviews" class="reviews">
+        <h2>Reviews</h2>
+
+        {% if form %}
+          <form method="post" action="{{ url_for('shelters.add_review', shelter_id=shelter.id) }}" class="card review-form" novalidate>
+            {{ form.hidden_tag() }}
+            <h3>Write a review</h3>
+            <fieldset class="field">
+              <legend>Your rating</legend>
+              <div class="star-input">
+                {% for option in form.rating %}
+                  {{ option(id="rate-" ~ option.data) }}<label for="rate-{{ option.data }}" title="{{ option.data }} star{{ 's' if option.data != '1' }}">★</label>
+                {% endfor %}
+              </div>
+              {% for error in form.rating.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+            </fieldset>
+            {{ render_field(form.body) }}
+            {{ form.submit(class="button") }}
+          </form>
+        {% elif not current_user.is_authenticated %}
+          <div class="card muted-card">
+            <a href="{{ url_for('auth.login', next=request.path) }}">Log in</a> or
+            <a href="{{ url_for('auth.register') }}">create an account</a> to leave a review.
+          </div>
+        {% elif my_review %}
+          <p class="muted small">You've reviewed this shelter.</p>
+        {% elif not can_review %}
+          <p class="muted small">Only guests (seeker accounts) can write reviews.</p>
+        {% endif %}
+
+        {% for review in shelter.reviews %}
+          <article class="review">
+            <header>
+              <span class="avatar" aria-hidden="true">★</span>
+              <div>
+                {# Don't show emails publicly; guests may want privacy. #}
+                <strong>{{ 'Your review' if current_user.is_authenticated and review.user_id == current_user.id else 'Verified guest' }}</strong>
+                <p class="muted small">{{ review.created_at.strftime('%b %d, %Y') }}</p>
+              </div>
+              {{ stars(review.rating, small=true) }}
+            </header>
+            <p>{{ review.body }}</p>
+            {% if review.can_be_deleted_by(current_user) %}
+              <form method="post" action="{{ url_for('shelters.delete_review', review_id=review.id) }}" class="inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="link-button danger small">Delete</button>
+              </form>
+            {% endif %}
+          </article>
+        {% else %}
+          {% if not form %}<p class="muted">Be the first to share what it's like here.</p>{% endif %}
+        {% endfor %}
+      </section>
+    </div>
+
+    <aside class="detail-side">
+      <div class="card info-card">
+        <h3>Location</h3>
+        <p>{{ shelter.full_address }}</p>
+        <a class="button button-small" target="_blank" rel="noopener"
+           href="https://www.google.com/maps/search/?api=1&query={{ (shelter.name ~ ', ' ~ shelter.full_address)|urlencode }}">Get directions</a>
+
+        {% if shelter.website %}
+          <h3>Website</h3>
+          <p><a href="{{ shelter.website }}" target="_blank" rel="noopener">{{ shelter.website.split('//')[-1].rstrip('/') }}</a></p>
+        {% endif %}
+
+        <h3>Before you go</h3>
+        <p class="small">Call <strong>211</strong> (24/7) to confirm hours, intake rules and whether beds are open.</p>
+        {% if shelter.info_checked_on %}
+          <p class="muted small">Listing details last checked {{ shelter.info_checked_on.strftime('%b %d, %Y') }} from public directories.</p>
+        {% endif %}
+      </div>
+    </aside>
+  </div>
+{% endblock %}

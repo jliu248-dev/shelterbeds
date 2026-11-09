@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% from "_form_helpers.html" import render_field %}
+{% from "_ui.html" import logo %}
+{% block title %}Log in{% endblock %}
+{% block content %}
+  <div class="card form-card">
+    <div class="form-card-head">{{ logo(48) }}<h1>Welcome back</h1><p class="muted">Log in to ShelterBeds.</p></div>
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      {{ render_field(form.email, autocomplete="email", placeholder="you@example.com") }}
+      {{ render_field(form.password, autocomplete="current-password") }}
+      <label class="checkbox">{{ form.remember() }} {{ form.remember.label.text }}</label>
+      {{ form.submit(class="button button-block") }}
+    </form>
+    <p class="muted center">New here? <a href="{{ url_for('auth.register') }}">Create an account</a></p>
+  </div>
+{% endblock %}
