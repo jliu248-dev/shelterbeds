@@ -25,6 +25,9 @@
         <a href="{{ url_for('shelters.index') }}" class="{{ 'active' if request.blueprint == 'shelters' }}">Shelters</a>
         {% if current_user.is_authenticated %}
           <a href="{{ url_for('main.dashboard') }}" class="{{ 'active' if request.endpoint == 'main.dashboard' }}">Dashboard</a>
+          {% if current_user.is_approved %}
+            <a href="{{ url_for('beds.index') }}" class="{{ 'active' if request.blueprint == 'beds' }}">Beds</a>
+          {% endif %}
 
           {# Teammates: add role-specific links in these blocks. #}
           {% if current_user.role == 'seeker' %}
