@@ -28,6 +28,9 @@ def create_app(config_class=Config):
     from app.errors import register_error_handlers
     register_error_handlers(app)
 
+    from app.filters import register_filters
+    register_filters(app)
+
     return app
 
 

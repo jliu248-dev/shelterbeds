@@ -22,7 +22,7 @@
           <h3>{{ b.label }}</h3>
           <p class="muted small">
             {{ b.available }} open · {{ on_hold }} on hold · {{ b.total }} total
-            {% if b.updated_at %}<br>Updated {{ b.updated_at.strftime('%b %d, %I:%M %p') }}{% endif %}
+            {% if b.updated_at %}<br>Updated {{ b.updated_at|pacific }}{% endif %}
           </p>
           <form method="post" action="{{ url_for('beds.update_bed_type', bed_type_id=b.id) }}" novalidate>
             {{ f.hidden_tag() }}

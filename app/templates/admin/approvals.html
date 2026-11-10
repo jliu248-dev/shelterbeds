@@ -19,7 +19,7 @@
           {% for user in pending %}
             <tr>
               <td><strong>{{ user.email }}</strong></td>
-              <td class="muted">{{ user.created_at.strftime('%b %d, %Y') }}</td>
+              <td class="muted">{{ user.created_at|pacific('%b %d, %Y') }}</td>
               <td>
                 <form method="post" action="{{ url_for('admin.approve_user', user_id=user.id) }}" class="approve-form">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
