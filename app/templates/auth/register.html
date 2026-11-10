@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "_form_helpers.html" import render_field %}
+{% from "_ui.html" import logo %}
+{% block title %}Register{% endblock %}
+{% block content %}
+  <div class="card form-card">
+    <div class="form-card-head">{{ logo(48) }}<h1>Create your account</h1><p class="muted">Free, and takes under a minute.</p></div>
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      {{ render_field(form.email, autocomplete="email", placeholder="you@example.com") }}
+      {{ render_field(form.password, autocomplete="new-password", placeholder="At least 8 characters") }}
+      {{ render_field(form.confirm, autocomplete="new-password") }}
+      <fieldset class="field">
+        <legend>{{ form.role.label.text }}</legend>
+        <div class="role-options">
+          {% for option in form.role %}
+            <label class="role-option">{{ option() }}<span>{{ option.label.text }}</span></label>
+          {% endfor %}
+        </div>
+        {% for error in form.role.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      </fieldset>
+      {{ form.submit(class="button button-block") }}
+    </form>
+    <p class="muted center">Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a></p>
+  </div>
+{% endblock %}

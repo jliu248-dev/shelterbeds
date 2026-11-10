@@ -1,0 +1,21 @@
+{# One shelter card. Expects a variable `s` (a Shelter). #}
+{% from "_ui.html" import stars, shelter_cover %}
+<a class="shelter-card" href="{{ url_for('shelters.detail', shelter_id=s.id) }}">
+  <div class="shelter-card-media">
+    {{ shelter_cover(s) }}
+    {% if s.serves %}<span class="chip chip-float">{{ s.serves }}</span>{% endif %}
+  </div>
+  <div class="shelter-card-body">
+    <h3>{{ s.name }}</h3>
+    <p class="muted small">{{ s.address }}, {{ s.city }}</p>
+    <div class="rating-line">
+      {% if s.review_count %}
+        {{ stars(s.average_rating, small=true) }}
+        <strong>{{ s.average_rating }}</strong>
+        <span class="muted small">({{ s.review_count }} review{{ 's' if s.review_count != 1 }})</span>
+      {% else %}
+        <span class="muted small">No reviews yet</span>
+      {% endif %}
+    </div>
+  </div>
+</a>

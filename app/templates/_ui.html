@@ -1,0 +1,52 @@
+{# Reusable UI pieces. Use with: {% from "_ui.html" import stars, shelter_cover, logo %} #}
+
+{% macro logo(size=36) %}
+  <img src="{{ url_for('static', filename='img/logo.svg') }}" width="{{ size }}" height="{{ size }}" alt="" class="logo-mark">
+{% endmacro %}
+
+{# Read-only star rating, e.g. stars(4.3) #}
+{% macro stars(rating, small=false) %}
+  {%- set r = rating or 0 -%}
+  <span class="stars{{ ' stars-sm' if small }}" role="img" aria-label="{{ r }} out of 5 stars">
+    {%- for i in range(1, 6) -%}
+      <span class="star {{ 'on' if r >= i - 0.25 else ('half' if r >= i - 0.75 else '') }}">★</span>
+    {%- endfor -%}
+  </span>
+{% endmacro %}
+
+{# Shelter photo if one was uploaded, otherwise a drawn illustration. #}
+{% macro shelter_cover(shelter, cls="cover") %}
+  {% if shelter.photo_filename %}
+    <img class="{{ cls }}" src="{{ url_for('shelters.photo', shelter_id=shelter.id) }}" alt="Photo of {{ shelter.name }}" loading="lazy">
+  {% else %}
+    {% set palettes = [
+      ("#ccfbf1", "#5eead4", "#0f766e"),
+      ("#fef3c7", "#fcd34d", "#b45309"),
+      ("#e0e7ff", "#a5b4fc", "#4338ca"),
+      ("#fce7f3", "#f9a8d4", "#be185d"),
+      ("#dcfce7", "#86efac", "#15803d"),
+      ("#e0f2fe", "#7dd3fc", "#0369a1"),
+      ("#ede9fe", "#c4b5fd", "#6d28d9"),
+    ] %}
+    {% set p = palettes[shelter.id % palettes|length] %}
+    <svg class="{{ cls }}" viewBox="0 0 400 220" preserveAspectRatio="xMidYMax slice" role="img" aria-label="Illustration of {{ shelter.name }}">
+      <defs>
+        <linearGradient id="sky{{ shelter.id }}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="{{ p[0] }}"/><stop offset="1" stop-color="#ffffff"/>
+        </linearGradient>
+      </defs>
+      <rect width="400" height="220" fill="url(#sky{{ shelter.id }})"/>
+      <circle cx="330" cy="58" r="22" fill="{{ p[1] }}" opacity=".7"/>
+      <path d="M0 180 Q100 150 200 172 T400 166 V220 H0Z" fill="{{ p[1] }}" opacity=".45"/>
+      <g transform="translate(120 62)">
+        <path d="M-14 58 80 -6 174 58" fill="none" stroke="{{ p[2] }}" stroke-width="10" stroke-linejoin="round" stroke-linecap="round"/>
+        <rect x="6" y="52" width="148" height="96" rx="6" fill="#fff" stroke="{{ p[2] }}" stroke-width="5"/>
+        <rect x="26" y="72" width="28" height="24" rx="3" fill="{{ p[1] }}"/>
+        <rect x="106" y="72" width="28" height="24" rx="3" fill="{{ p[1] }}"/>
+        <rect x="64" y="96" width="32" height="52" rx="4" fill="{{ p[2] }}"/>
+        <circle cx="89" cy="123" r="2.6" fill="#fff"/>
+      </g>
+      <path d="M0 200 Q120 186 220 198 T400 194 V220 H0Z" fill="{{ p[2] }}" opacity=".18"/>
+    </svg>
+  {% endif %}
+{% endmacro %}

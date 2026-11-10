@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Shelters{% endblock %}
+{% block content %}
+  <div class="page-head">
+    <div>
+      <h1>Shelters near Santa Clara University</h1>
+      <p class="muted">{{ shelters|length }} emergency shelters in Santa Clara and San Jose.</p>
+    </div>
+  </div>
+
+  <div class="notice">
+    <strong>Call before you go.</strong> Hours and intake rules change. Check the shelter's website or call
+    <strong>211</strong> to confirm. Looking for a domestic-violence shelter? Those locations are kept private.
+    Call the YWCA 24-hour line at <strong>1-800-572-2782</strong>.
+  </div>
+
+  {% if shelters %}
+    <div class="grid">
+      {% for s in shelters %}{% include "shelters/_card.html" %}{% endfor %}
+    </div>
+  {% else %}
+    <div class="card empty">No shelters yet. Run <code>python seed_shelters.py</code> to load them.</div>
+  {% endif %}
+{% endblock %}

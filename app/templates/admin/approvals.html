@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Approvals{% endblock %}
+{% block content %}
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">Admin</p>
+      <h1>Pending shelter staff</h1>
+      <p class="muted">Approve staff and link them to the shelter they work at.</p>
+    </div>
+  </div>
+
+  {% if pending %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr><th>Email</th><th>Registered</th><th>Shelter &amp; approve</th></tr>
+        </thead>
+        <tbody>
+          {% for user in pending %}
+            <tr>
+              <td><strong>{{ user.email }}</strong></td>
+              <td class="muted">{{ user.created_at.strftime('%b %d, %Y') }}</td>
+              <td>
+                <form method="post" action="{{ url_for('admin.approve_user', user_id=user.id) }}" class="approve-form">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <select name="shelter_id" aria-label="Shelter for {{ user.email }}">
+                    <option value="">No shelter yet</option>
+                    {% for s in shelters %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+                  </select>
+                  <button type="submit" class="button button-small">Approve</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="card empty">
+      <span class="empty-icon">✓</span>
+      <p>All caught up. No accounts are waiting for approval.</p>
+    </div>
+  {% endif %}
+{% endblock %}

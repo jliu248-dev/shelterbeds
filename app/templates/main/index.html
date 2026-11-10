@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% from "_ui.html" import stars, shelter_cover %}
+{% block title %}Find a shelter bed{% endblock %}
+
+{% block hero %}
+<section class="hero">
+  <div class="container hero-inner">
+    <div class="hero-copy">
+      <span class="eyebrow">Santa Clara &amp; San Jose</span>
+      <h1>A safe place to sleep tonight, <span class="hl">without the phone tag.</span></h1>
+      <p class="lead">ShelterBeds lists emergency shelters near Santa Clara University in one place. See who each shelter serves, read reviews from past guests, and get directions in one tap.</p>
+      <div class="hero-actions">
+        <a class="button button-lg" href="{{ url_for('shelters.index') }}">Browse shelters</a>
+        <a class="button button-lg button-secondary" href="{{ url_for('auth.register') }}">Create an account</a>
+      </div>
+      <ul class="hero-points">
+        <li>Free to use</li><li>No account needed to browse</li><li>Reviews from real guests</li>
+      </ul>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <div class="hero-card hero-card-back"></div>
+      <div class="hero-card">
+        <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="" width="64" height="64">
+        <p class="hero-card-title">Beds near you</p>
+        <p class="hero-card-sub">{{ shelter_count }} shelters listed</p>
+        <div class="hero-bar"><span style="width:72%"></span></div>
+        <div class="hero-bar"><span style="width:45%"></span></div>
+        <div class="hero-bar"><span style="width:88%"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-head">
+      <h2>Shelters near SCU</h2>
+      <a href="{{ url_for('shelters.index') }}">See all →</a>
+    </div>
+    {% if featured %}
+      <div class="grid">
+        {% for s in featured %}{% include "shelters/_card.html" %}{% endfor %}
+      </div>
+    {% else %}
+      <div class="card empty">No shelters yet. Run <code>python seed_shelters.py</code> to load them.</div>
+    {% endif %}
+  </section>
+
+  <section class="section steps">
+    <div class="step"><span class="step-num">1</span><h3>Browse</h3><p>See shelters, who they serve and what guests say about them.</p></div>
+    <div class="step"><span class="step-num">2</span><h3>Confirm</h3><p>Call 211 or check the shelter's site for tonight's hours and intake rules.</p></div>
+    <div class="step"><span class="step-num">3</span><h3>Share</h3><p>After your stay, leave a review to help the next person decide.</p></div>
+  </section>
+{% endblock %}

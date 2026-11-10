@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">Dashboard</p>
+      <h1>Welcome back</h1>
+      <p class="muted">{{ current_user.email }}</p>
+    </div>
+    <div class="badges">
+      <span class="badge">{{ current_user.role_label }}</span>
+      <span class="badge badge-{{ current_user.status }}">{{ current_user.status|title }}</span>
+    </div>
+  </div>
+
+  {% if not current_user.is_approved %}
+    <div class="notice notice-warning">
+      <strong>Waiting for approval.</strong> An admin needs to approve your shelter staff account.
+      You'll be able to manage your shelter once it's approved.
+    </div>
+  {% endif %}
+
+  <div class="tiles">
+    {% if current_user.role == 'seeker' %}
+      <a class="tile" href="{{ url_for('shelters.index') }}">
+        <span class="tile-icon">⌂</span><h2>Browse shelters</h2>
+        <p>See shelters near SCU, read reviews and get directions.</p>
+      </a>
+      <div class="tile tile-placeholder">
+        <span class="tile-icon">☾</span><h2>Bed requests</h2>
+        <p>Search open beds and send requests. Coming soon.</p>
+      </div>
+    {% elif current_user.role == 'shelter_staff' %}
+      {% if current_user.is_approved and current_user.shelter %}
+        <a class="tile" href="{{ url_for('shelters.detail', shelter_id=current_user.shelter.id) }}">
+          <span class="tile-icon">⌂</span><h2>{{ current_user.shelter.name }}</h2>
+          <p>View and edit your shelter's page.</p>
+        </a>
+      {% elif current_user.is_approved %}
+        <div class="tile tile-placeholder">
+          <span class="tile-icon">⌂</span><h2>Your shelter</h2>
+          <p>An admin hasn't linked your account to a shelter yet.</p>
+        </div>
+      {% endif %}
+      <div class="tile tile-placeholder">
+        <span class="tile-icon">☾</span><h2>Open beds</h2>
+        <p>Post and update open beds. Coming soon.</p>
+      </div>
+    {% elif current_user.role == 'admin' %}
+      <a class="tile" href="{{ url_for('admin.approvals') }}">
+        <span class="tile-icon">✓</span><h2>Approvals</h2>
+        <p>Review pending shelter staff accounts.</p>
+      </a>
+      <a class="tile" href="{{ url_for('shelters.index') }}">
+        <span class="tile-icon">⌂</span><h2>Shelters</h2>
+        <p>Edit shelter details and photos, moderate reviews.</p>
+      </a>
+    {% endif %}
+  </div>
+{% endblock %}
