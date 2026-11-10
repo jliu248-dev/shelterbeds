@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% from "_form_helpers.html" import render_field %}
+{% block title %}Manage beds · {{ shelter.name }}{% endblock %}
+{% block content %}
+  {% if current_user.is_admin %}
+    <a class="back-link" href="{{ url_for('beds.index') }}">← All shelters</a>
+  {% endif %}
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">Manage beds</p>
+      <h1>{{ shelter.name }}</h1>
+      <p class="muted">Keep these numbers current so caseworkers see real openings.</p>
+    </div>
+  </div>
+
+  {% if bed_types %}
+    <div class="grid">
+      {% for b in bed_types %}
+        {% set f = count_forms[b.id] %}
+        {% set on_hold = hold_counts.get(b.id, 0) %}
+        <div class="card bed-card">
+          <h3>{{ b.label }}</h3>
+          <p class="muted small">
+            {{ b.available }} open · {{ on_hold }} on hold · {{ b.total }} total
+            {% if b.updated_at %}<br>Updated {{ b.updated_at.strftime('%b %d, %I:%M %p') }}{% endif %}
+          </p>
+          <form method="post" action="{{ url_for('beds.update_bed_type', bed_type_id=b.id) }}" novalidate>
+            {{ f.hidden_tag() }}
+            <div class="count-row">
+              {{ render_field(f.available, type="number", min=0) }}
+              {{ render_field(f.total, type="number", min=0) }}
+            </div>
+            {{ f.submit(class="button button-small") }}
+          </form>
+          <form method="post" action="{{ url_for('beds.delete_bed_type', bed_type_id=b.id) }}" class="inline"
+                onsubmit="return confirm('Delete {{ b.label|e }}?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="link-button danger-link">Delete group</button>
+          </form>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="card empty">No bed groups yet. Add one below, e.g. “Men 18+” or “Families”.</div>
+  {% endif %}
+
+  <div class="card form-card form-card-wide">
+    <h2>Add a bed group</h2>
+    <form method="post" action="{{ url_for('beds.add_bed_type', shelter_id=shelter.id) }}" novalidate>
+      {{ add_form.hidden_tag() }}
+      {{ render_field(add_form.label, placeholder="e.g. Men 18+, Families, Youth 11–17") }}
+      <div class="count-row">
+        {{ render_field(add_form.total, type="number", min=0) }}
+        {{ render_field(add_form.available, type="number", min=0) }}
+      </div>
+      {{ add_form.submit(class="button") }}
+    </form>
+  </div>
+{% endblock %}

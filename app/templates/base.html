@@ -26,14 +26,14 @@
         {% if current_user.is_authenticated %}
           <a href="{{ url_for('main.dashboard') }}" class="{{ 'active' if request.endpoint == 'main.dashboard' }}">Dashboard</a>
           {% if current_user.is_approved %}
-            <a href="{{ url_for('beds.index') }}" class="{{ 'active' if request.blueprint == 'beds' }}">Beds</a>
+            <a href="{{ url_for('beds.index') }}" class="{{ 'active' if request.endpoint == 'beds.index' }}">Beds</a>
           {% endif %}
 
           {# Teammates: add role-specific links in these blocks. #}
           {% if current_user.role == 'seeker' %}
             {# e.g. <a href="{{ url_for('search.index') }}">Find a bed</a> #}
           {% elif current_user.role == 'shelter_staff' and current_user.is_approved %}
-            {# e.g. <a href="{{ url_for('beds.mine') }}">My beds</a> #}
+            <a href="{{ url_for('beds.manage_home') }}" class="{{ 'active' if request.endpoint and request.endpoint.startswith('beds.manage') }}">Manage beds</a>
           {% elif current_user.role == 'admin' %}
             <a href="{{ url_for('admin.approvals') }}" class="{{ 'active' if request.blueprint == 'admin' }}">Approvals</a>
           {% endif %}
