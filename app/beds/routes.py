@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from flask import abort, flash, redirect, render_template, url_for
 from flask_login import current_user
 from sqlalchemy import func
@@ -5,6 +7,7 @@ from sqlalchemy.orm import selectinload
 
 from app.beds import bp
 from app.beds.forms import BedCountsForm, BedTypeForm
+from app.beds.holds import expire_stale_holds
 from app.decorators import approved_required, role_required
 from app.extensions import db
 from app.models import BedType, Hold, HoldStatus, Role, Shelter
@@ -23,13 +26,23 @@ def _require_can_manage(shelter):
         abort(403)
 
 
+@bp.before_request
+def _expire_holds():
+    """No background worker on Cloud Run, so release expired holds at the start of every request."""
+    expire_stale_holds()
+
+
 def _active_hold_counts(bed_type_ids):
-    """{bed_type_id: number of active holds} for the given bed groups."""
+    """{bed_type_id: number of active, unexpired holds} for the given bed groups."""
     if not bed_type_ids:
         return {}
     rows = (
         db.session.query(Hold.bed_type_id, func.count(Hold.id))
-        .filter(Hold.bed_type_id.in_(bed_type_ids), Hold.status == HoldStatus.ACTIVE)
+        .filter(
+            Hold.bed_type_id.in_(bed_type_ids),
+            Hold.status == HoldStatus.ACTIVE,
+            Hold.expires_at > datetime.now(timezone.utc),
+        )
         .group_by(Hold.bed_type_id)
         .all()
     )
