@@ -344,6 +344,15 @@ input[type=checkbox], input[type=radio] { accent-color: var(--brand); width: 1.0
 }
 .badge-approved { background: var(--success-bg); color: var(--success-text); }
 .badge-pending  { background: var(--warning-bg); color: var(--warning-text); }
+.badge-hold-active    { background: var(--warning-bg); color: var(--warning-text); }
+.badge-hold-confirmed { background: var(--success-bg); color: var(--success-text); }
+.badge-hold-expired,
+.badge-hold-cancelled { background: var(--surface-2); color: var(--muted); }
+
+.section-gap { margin-bottom: 2rem; }
+
+/* Bed group line with an optional "Hold a bed" button. */
+.bed-row { display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap; padding: .25rem 0; }
 
 /* ---------- Dashboard tiles ---------- */
 .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: 1.25rem; }

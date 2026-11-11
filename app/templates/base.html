@@ -32,6 +32,9 @@
           {# Teammates: add role-specific links in these blocks. #}
           {% if current_user.role == 'seeker' %}
             {# e.g. <a href="{{ url_for('search.index') }}">Find a bed</a> #}
+            {% if current_user.is_approved %}
+              <a href="{{ url_for('beds.my_holds') }}" class="{{ 'active' if request.endpoint == 'beds.my_holds' }}">My holds</a>
+            {% endif %}
           {% elif current_user.role == 'shelter_staff' and current_user.is_approved %}
             <a href="{{ url_for('beds.manage_home') }}" class="{{ 'active' if request.endpoint and request.endpoint.startswith('beds.manage') }}">Manage beds</a>
           {% elif current_user.role == 'admin' %}

@@ -4,9 +4,16 @@
   <div class="page-head">
     <div>
       <h1>Open beds</h1>
-      <p class="muted">Bed availability by shelter. Holds and staff updates are coming soon.</p>
+      <p class="muted">Bed availability by shelter.{% if current_user.role == 'seeker' %} Hold a bed to save it for 60 minutes while you get there.{% endif %}</p>
     </div>
   </div>
+
+  {% if my_hold %}
+    <div class="flash flash-info" role="status">
+      You're holding a bed at {{ my_hold.bed_type.shelter.name }} ({{ my_hold.bed_type.label }}) until {{ my_hold.expires_at|pacific }}.
+      <a href="{{ url_for('beds.my_holds') }}">View my holds</a>
+    </div>
+  {% endif %}
 
   {% if shelters %}
     <div class="grid">
@@ -17,7 +24,15 @@
           {% if s.bed_types %}
             <ul>
               {% for b in s.bed_types %}
-                <li>{{ b.label }}: <strong>{{ b.available }}</strong> of {{ b.total }} open</li>
+                <li class="bed-row">
+                  <span>{{ b.label }}: <strong>{{ b.available }}</strong> of {{ b.total }} open</span>
+                  {% if can_hold and b.available > 0 %}
+                    <form method="post" action="{{ url_for('beds.hold_bed', bed_type_id=b.id) }}" class="inline">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button type="submit" class="button button-small">Hold a bed</button>
+                    </form>
+                  {% endif %}
+                </li>
               {% endfor %}
             </ul>
           {% else %}
