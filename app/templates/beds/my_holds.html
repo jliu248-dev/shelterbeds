@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}My holds{% endblock %}
+{% block content %}
+  <div class="page-head">
+    <div>
+      <h1>My holds</h1>
+      <p class="muted">A hold saves one bed for 60 minutes. Check in at the shelter before it expires, or cancel so someone else can have the bed.</p>
+    </div>
+  </div>
+
+  {% if holds %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr><th>Shelter</th><th>Bed group</th><th>Status</th><th>Expires</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for h in holds %}
+            <tr>
+              <td><strong>{{ h.bed_type.shelter.name }}</strong><br><span class="muted small">{{ h.bed_type.shelter.address }}</span></td>
+              <td>{{ h.bed_type.label }}</td>
+              <td><span class="badge badge-hold-{{ h.status }}">{{ h.status|capitalize }}</span></td>
+              <td class="muted">{{ h.expires_at|pacific }}</td>
+              <td>
+                {% if h.is_active %}
+                  <form method="post" action="{{ url_for('beds.cancel', hold_id=h.id) }}" class="inline"
+                        onsubmit="return confirm('Cancel this hold? The bed will go to someone else.');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="link-button danger">Cancel hold</button>
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="card empty">
+      <p>You don't have any holds yet.</p>
+      <a class="button" href="{{ url_for('beds.index') }}">Find an open bed</a>
+    </div>
+  {% endif %}
+{% endblock %}

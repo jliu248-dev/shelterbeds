@@ -7,9 +7,10 @@ from sqlalchemy.orm import selectinload
 
 from app.beds import bp
 from app.beds.forms import BedCountsForm, BedTypeForm
-from app.beds.holds import expire_stale_holds
+from app.beds.holds import HoldError, active_hold_for, cancel_hold, expire_stale_holds, place_hold
 from app.decorators import approved_required, role_required
 from app.extensions import db
+from app.filters import pacific
 from app.models import BedType, Hold, HoldStatus, Role, Shelter
 
 
@@ -59,7 +60,10 @@ def index():
         .order_by(Shelter.city.desc(), Shelter.name)
         .all()
     )
-    return render_template("beds/index.html", shelters=shelters)
+    is_seeker = current_user.role == Role.SEEKER
+    my_hold = active_hold_for(current_user) if is_seeker else None
+    return render_template("beds/index.html", shelters=shelters,
+                           can_hold=is_seeker and my_hold is None, my_hold=my_hold)
 
 
 # --- Manage: shelter staff (own shelter) and admins (any shelter). ---
@@ -166,3 +170,47 @@ def delete_bed_type(bed_type_id):
     db.session.commit()
     flash(f"Deleted bed group “{label}”.", "info")
     return redirect(url_for("beds.manage", shelter_id=shelter.id))
+
+
+# --- Holds: seekers hold, view, and cancel their own holds. ---
+
+@bp.route("/types/<int:bed_type_id>/hold", methods=["POST"])
+@role_required(Role.SEEKER)
+def hold_bed(bed_type_id):
+    bed_type = _get_or_404(BedType, bed_type_id)
+    try:
+        hold = place_hold(current_user, bed_type)
+    except HoldError as e:
+        flash(str(e), "danger")
+        return redirect(url_for("beds.index"))
+    flash(f"Bed held at {bed_type.shelter.name} until {pacific(hold.expires_at)}. "
+          "Please check in before then.", "success")
+    return redirect(url_for("beds.my_holds"))
+
+
+@bp.route("/holds")
+@role_required(Role.SEEKER)
+def my_holds():
+    # Only this user's holds: the filter runs in the database, not the template.
+    holds = (
+        Hold.query.filter(Hold.user_id == current_user.id)
+        .options(selectinload(Hold.bed_type).selectinload(BedType.shelter))
+        .order_by(Hold.created_at.desc())
+        .all()
+    )
+    return render_template("beds/my_holds.html", holds=holds)
+
+
+@bp.route("/holds/<int:hold_id>/cancel", methods=["POST"])
+@role_required(Role.SEEKER)
+def cancel(hold_id):
+    hold = _get_or_404(Hold, hold_id)
+    if hold.user_id != current_user.id:
+        abort(403)
+    try:
+        cancel_hold(hold)
+    except HoldError as e:
+        flash(str(e), "danger")
+    else:
+        flash("Hold cancelled. The bed is open for someone else.", "info")
+    return redirect(url_for("beds.my_holds"))
