@@ -13,6 +13,35 @@
     </div>
   </div>
 
+  <h2>Active holds</h2>
+  {% if active_holds %}
+    <div class="table-wrap section-gap">
+      <table class="table">
+        <thead>
+          <tr><th>Person</th><th>Bed group</th><th>Held until</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for h in active_holds %}
+            <tr>
+              <td><strong>{{ h.user.email }}</strong></td>
+              <td>{{ h.bed_type.label }}</td>
+              <td class="muted">{{ h.expires_at|pacific }}</td>
+              <td>
+                <form method="post" action="{{ url_for('beds.confirm', hold_id=h.id) }}" class="inline">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="button button-small">Checked in</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="muted section-gap">No one is holding a bed here right now.</p>
+  {% endif %}
+
+  <h2>Bed groups</h2>
   {% if bed_types %}
     <div class="grid">
       {% for b in bed_types %}

@@ -7,7 +7,9 @@ from sqlalchemy.orm import selectinload
 
 from app.beds import bp
 from app.beds.forms import BedCountsForm, BedTypeForm
-from app.beds.holds import HoldError, active_hold_for, cancel_hold, expire_stale_holds, place_hold
+from app.beds.holds import (
+    HoldError, active_hold_for, cancel_hold, confirm_hold, expire_stale_holds, place_hold,
+)
 from app.decorators import approved_required, role_required
 from app.extensions import db
 from app.filters import pacific
@@ -104,8 +106,39 @@ def _render_manage(shelter, add_form=None, failed_form=None, failed_id=None, sta
         bed_types=bed_types,
         count_forms=count_forms,
         hold_counts=_active_hold_counts([b.id for b in bed_types]),
+        active_holds=_active_holds_for_shelter(shelter),
         add_form=add_form or BedTypeForm(formdata=None, prefix="new"),
     ), status
+
+
+def _active_holds_for_shelter(shelter):
+    """Active, unexpired holds at this shelter, soonest to expire first."""
+    return (
+        Hold.query.join(Hold.bed_type)
+        .filter(
+            BedType.shelter_id == shelter.id,
+            Hold.status == HoldStatus.ACTIVE,
+            Hold.expires_at > datetime.now(timezone.utc),
+        )
+        .options(selectinload(Hold.user), selectinload(Hold.bed_type))
+        .order_by(Hold.expires_at)
+        .all()
+    )
+
+
+@bp.route("/holds/<int:hold_id>/confirm", methods=["POST"])
+@role_required(Role.SHELTER_STAFF, Role.ADMIN)
+def confirm(hold_id):
+    hold = _get_or_404(Hold, hold_id)
+    shelter = hold.bed_type.shelter
+    _require_can_manage(shelter)  # staff only for their own shelter; admins any
+    try:
+        confirm_hold(hold)
+    except HoldError as e:
+        flash(str(e), "danger")
+    else:
+        flash(f"Checked in {hold.user.email} to “{hold.bed_type.label}”.", "success")
+    return redirect(url_for("beds.manage", shelter_id=shelter.id))
 
 
 @bp.route("/manage/<int:shelter_id>/add", methods=["POST"])
