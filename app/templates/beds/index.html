@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Beds{% endblock %}
+{% block content %}
+  <div class="page-head">
+    <div>
+      <h1>Open beds</h1>
+      <p class="muted">Bed availability by shelter. Holds and staff updates are coming soon.</p>
+    </div>
+  </div>
+
+  {% if shelters %}
+    <div class="grid">
+      {% for s in shelters %}
+        <div class="card">
+          <h3><a href="{{ url_for('shelters.detail', shelter_id=s.id) }}">{{ s.name }}</a></h3>
+          <p class="muted">{{ s.city }}{% if s.serves %} · {{ s.serves }}{% endif %}</p>
+          {% if s.bed_types %}
+            <ul>
+              {% for b in s.bed_types %}
+                <li>{{ b.label }}: <strong>{{ b.available }}</strong> of {{ b.total }} open</li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="muted">No bed info yet.</p>
+          {% endif %}
+          {% if s.can_be_edited_by(current_user) %}
+            <a class="button button-small button-secondary" href="{{ url_for('beds.manage', shelter_id=s.id) }}">Manage beds</a>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="card empty">No shelters yet. Run <code>python seed_shelters.py</code> to load them.</div>
+  {% endif %}
+{% endblock %}

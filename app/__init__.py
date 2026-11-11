@@ -28,6 +28,9 @@ def create_app(config_class=Config):
     from app.errors import register_error_handlers
     register_error_handlers(app)
 
+    from app.filters import register_filters
+    register_filters(app)
+
     return app
 
 
@@ -36,15 +39,15 @@ def register_blueprints(app):
     from app.auth import bp as auth_bp
     from app.admin import bp as admin_bp
     from app.shelters import bp as shelters_bp
+    from app.beds import bp as beds_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(admin_bp, url_prefix="/admin")
     app.register_blueprint(shelters_bp, url_prefix="/shelters")
+    app.register_blueprint(beds_bp, url_prefix="/beds")
 
-    # Teammates: register new blueprints here, e.g.
-    # from app.beds import bp as beds_bp
-    # app.register_blueprint(beds_bp, url_prefix="/beds")
+    # Teammates: register new blueprints here.
 
 
 def _check_secret_key(app):

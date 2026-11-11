@@ -71,7 +71,7 @@
               <div>
                 {# Don't show emails publicly; guests may want privacy. #}
                 <strong>{{ 'Your review' if current_user.is_authenticated and review.user_id == current_user.id else 'Verified guest' }}</strong>
-                <p class="muted small">{{ review.created_at.strftime('%b %d, %Y') }}</p>
+                <p class="muted small">{{ review.created_at|pacific('%b %d, %Y') }}</p>
               </div>
               {{ stars(review.rating, small=true) }}
             </header>

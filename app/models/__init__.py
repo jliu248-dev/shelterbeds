@@ -5,3 +5,4 @@ Teammates: add a new file (e.g. bed.py) and import its model below.
 """
 from app.models.user import Role, Status, User  # noqa: F401
 from app.models.shelter import Review, Shelter  # noqa: F401
+from app.models.bed import BedType, Hold, HoldStatus  # noqa: F401
